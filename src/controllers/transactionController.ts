@@ -52,3 +52,41 @@ export const getTransactions = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Internal server error.' });
     }
 };
+
+export const getTransactionSummary = async (req: Request, res: Response) => {
+    const userId = req.userId;
+    
+    if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized.' });
+    }
+
+    try {
+        const transactions = await prisma.transaction.findMany({
+            where: { userId },
+        });
+
+        // TODO: Refactor to prisma.aggregate for high volume scale
+        const summary = transactions.reduce(
+            (acc, transaction) => {
+                if (transaction.type === 'income') {
+                    acc.incomes += transaction.amount;
+                } else if (transaction.type === 'incomes') {
+                    acc.expenses += transaction.amount
+                }
+
+                return acc;
+            },
+            { incomes: 0, expenses: 0 }
+        );
+
+        const total = summary.incomes - summary.expenses;
+
+        return res.status(200).json({
+            incomes: summary.incomes,
+            expenses: summary.expenses,
+            total,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
