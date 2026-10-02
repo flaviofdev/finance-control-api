@@ -70,7 +70,7 @@ export const getTransactionSummary = async (req: Request, res: Response) => {
             (acc, transaction) => {
                 if (transaction.type === 'income') {
                     acc.incomes += transaction.amount;
-                } else if (transaction.type === 'incomes') {
+                } else if (transaction.type === 'expense') {
                     acc.expenses += transaction.amount
                 }
 
@@ -123,6 +123,36 @@ export const updateTransaction = async (req: Request, res: Response) => {
         });
 
         return res.status(200).json(updatedTransaction);
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+export const deleteTransaction = async (req: Request, res: Response) => {
+    const userId = req.userId;
+    const { id } = req.params as { id: string };
+
+    if (!userId) {
+        return res.status(401).json({ message: "Unauthorized." });
+    }
+
+    try {
+        const existingTransaction = await prisma.transaction.findFirst({
+            where: {
+                id,
+                userId,
+            },
+        });
+
+        if (!existingTransaction) {
+            return res.status(404).json({ message: "Transaction not found." });
+        }
+
+        await prisma.transaction.delete({
+            where: { id },
+        });
+
+        return res.status(200).json({ message: "Transaction deleted succesfully." });
     } catch (error) {
         return res.status(500).json({ message: "Internal server error." });
     }
