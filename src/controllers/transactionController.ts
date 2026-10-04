@@ -79,11 +79,11 @@ export const getTransactionSummary = async (req: Request, res: Response) => {
             { incomes: 0, expenses: 0 }
         );
 
-        const total = summary.incomes - summary.expenses;
+        const total = Number((summary.incomes - summary.expenses).toFixed(2));
 
         return res.status(200).json({
-            incomes: summary.incomes,
-            expenses: summary.expenses,
+            incomes: Number(summary.incomes.toFixed(2)),
+            expenses: Number(summary.expenses.toFixed(2)),
             total,
         });
     } catch (error) {
