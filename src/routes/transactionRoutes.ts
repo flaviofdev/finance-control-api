@@ -3,15 +3,17 @@ import { createTransaction, getTransactions,
     getTransactionSummary, updateTransaction,
     deleteTransaction } from '../controllers/transactionController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
+import { validate } from '../middlewares/validate.js';
+import { createTransactionSchema, updateTransactionSchema } from '../schemas/transactionSchema.js';
 
-const router = Router();
+const transactionRoutes = Router();
 
-router.use(authMiddleware);
+transactionRoutes.use(authMiddleware);
 
-router.get('/summary', getTransactionSummary);
-router.get('/', getTransactions);
-router.post('/', createTransaction);
-router.put('/:id', updateTransaction);
-router.delete('/:id', deleteTransaction);
+transactionRoutes.get('/summary', getTransactionSummary);
+transactionRoutes.post('/', validate(createTransactionSchema), createTransaction);
+transactionRoutes.put('/:id', validate(updateTransactionSchema), updateTransaction);
+transactionRoutes.get('/', getTransactions);
+transactionRoutes.delete('/:id', deleteTransaction);
 
-export default router;
+export default transactionRoutes;
