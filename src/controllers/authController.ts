@@ -6,18 +6,12 @@ import jwt from 'jsonwebtoken';
 export const Register = async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-        return res.status(400).json({message: "Please fill in all fields."});
-    }
-
     const userExists = await prisma.user.findUnique({
-        where: {
-            email: email
-        }
+        where: { email: email }
     });
 
     if (userExists) {
-        return res.status(400).json({message: "User already exists."});
+        return res.status(400).json({ message: "User already exists." });
     }
 
     const passwordHash = await bcrypt.hash(password, 8);
@@ -41,22 +35,18 @@ export const Register = async (req: Request, res: Response) => {
 export const Login = async (req: Request, res: Response ) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json ({message: "Please fill in all fields!"});
-    }
-
     const user = await prisma.user.findUnique({
         where: { email }
     });
 
     if (!user) {
-        return res.status(401).json ({message: "Invalid credentials."});
+        return res.status(401).json({ message: "Invalid credentials." });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     
     if (!isPasswordValid) {
-        return res.status(401).json ({message: "Invalid credentials."});
+        return res.status(401).json({ message: "Invalid credentials." });
     }
 
     const secret = process.env.JWT_SECRET || 'fallback_secret';
@@ -64,15 +54,14 @@ export const Login = async (req: Request, res: Response ) => {
         { id: user.id },
         secret,
         { expiresIn: '1d' }
-    )
+    );
 
     return res.status(200).json({
         user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
+            id: user.id,
+            name: user.name,
+            email: user.email,
         },
         token,
     });
-
 };

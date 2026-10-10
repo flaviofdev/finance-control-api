@@ -7,7 +7,7 @@ import transactionRoutes from './routes/transactionRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3333;
 
 app.use(helmet());
 app.use(cors());
@@ -20,15 +20,18 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(express.json());
-app.use(authRoutes);
+
+app.use('/auth', authRoutes);
 app.use('/transactions', transactionRoutes);
+
 app.get('/health', (req, res) => {
     return res.json({status: 'ok', message: 'API running smoothly'});
 });
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log('Server running on ${PORT}');
+    console.log(`Server running on port ${PORT}`);
 });
 
 
